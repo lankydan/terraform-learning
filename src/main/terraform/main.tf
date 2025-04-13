@@ -38,7 +38,7 @@ resource "kubernetes_pod" "my-app" {
   spec {
     container {
       image_pull_policy = "IfNotPresent"
-      image = "my-app:latest"
+      image = "my-app:0.0.1"
       name  = var.container_name
     }
   }
