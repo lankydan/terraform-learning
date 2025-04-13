@@ -3,5 +3,5 @@
 variable "container_name" {
   description = "container name"
   type = string
-  default = "Example container name"
+  default = "example-container-name"
 }
