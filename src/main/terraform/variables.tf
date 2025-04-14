@@ -11,3 +11,9 @@ variable "my_variable" {
   type        = string
   default     = "default"
 }
+
+variable "additional_environment_variables" {
+  description = "extra env variables"
+  type        = map(string)
+  default     = {}
+}

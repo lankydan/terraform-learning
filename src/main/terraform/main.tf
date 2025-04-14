@@ -39,11 +39,20 @@ resource "kubernetes_pod" "my-app" {
   spec {
     container {
       image_pull_policy = "IfNotPresent"
-      image = "my-app:0.0.2"
-      name  = var.container_name
+      image             = "my-app:0.0.3"
+      name              = var.container_name
       env {
         name  = "MY_VARIABLE"
         value = var.my_variable
+      }
+      # Dynamic environment variables are useful if we have a module that doesn't know about what environment variables
+      # the underlying application has, which is the case when you have a generic module that runs any application.
+      dynamic "env" {
+        for_each = var.additional_environment_variables
+        content {
+          name  = env.key
+          value = env.value
+        }
       }
     }
   }
@@ -58,7 +67,7 @@ resource "kubernetes_service" "my-app" {
       app = kubernetes_pod.my-app.metadata.0.labels.app
     }
     port {
-      port        = 8080
+      port = 8080
     }
 
     type = "NodePort"
