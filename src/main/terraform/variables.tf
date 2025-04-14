@@ -5,3 +5,9 @@ variable "container_name" {
   type = string
   default = "example-container-name"
 }
+
+variable "my_variable" {
+  description = "Set the log message in the application"
+  type        = string
+  default     = "default"
+}

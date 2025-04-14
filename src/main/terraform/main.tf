@@ -28,6 +28,7 @@ provider "kubernetes" {
   config_context = "docker-desktop"
 }
 
+# I'll need to set some variables for my docker container so i can input things to my container?
 resource "kubernetes_pod" "my-app" {
   metadata {
     name = var.container_name
@@ -38,8 +39,12 @@ resource "kubernetes_pod" "my-app" {
   spec {
     container {
       image_pull_policy = "IfNotPresent"
-      image = "my-app:0.0.1"
+      image = "my-app:0.0.2"
       name  = var.container_name
+      env {
+        name  = "MY_VARIABLE"
+        value = var.my_variable
+      }
     }
   }
 }
