@@ -39,8 +39,9 @@ resource "kubernetes_pod" "my-app" {
   spec {
     container {
       image_pull_policy = "IfNotPresent"
-      image             = "my-app:0.0.3"
+      image             = "my-app:0.0.5"
       name              = var.container_name
+      args              = length(var.configuration) > 0 ? ["${local.app_config_location}/config.yml"] : []
       env {
         name  = "MY_VARIABLE"
         value = var.my_variable
@@ -52,6 +53,23 @@ resource "kubernetes_pod" "my-app" {
         content {
           name  = env.key
           value = env.value
+        }
+      }
+      dynamic "volume_mount" {
+        for_each = length(var.configuration) > 0 ? [1] : []
+        content {
+          mount_path = local.app_config_location
+          name       = local.app_config_volume
+        }
+      }
+    }
+    dynamic "volume" {
+      for_each = length(var.configuration) > 0 ? [1] : []
+      content {
+        name = local.app_config_volume
+
+        config_map {
+          name = kubernetes_config_map.my-app[0].metadata[0].name
         }
       }
     }
@@ -76,4 +94,16 @@ resource "kubernetes_service" "my-app" {
   depends_on = [
     kubernetes_pod.my-app
   ]
+}
+
+resource "kubernetes_config_map" "my-app" {
+  count = length("configuration") > 0 ? 1 : 0
+  metadata {
+    name = format("%s-config-map", var.container_name)
+  }
+
+  data = {
+    # "config.yml" = length(var.configuration) > 0 ? yamlencode(var.configuration) : yamlencode(local.config)
+    "config.yml" = yamlencode(local.config)
+  }
 }

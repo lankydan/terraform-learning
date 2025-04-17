@@ -6,6 +6,12 @@ variable "container_name" {
   default = "example-container-name"
 }
 
+variable "configuration" {
+  description = "config file"
+  type = any
+  default = {}
+}
+
 variable "my_variable" {
   description = "Set the log message in the application"
   type        = string
@@ -17,3 +23,9 @@ variable "additional_environment_variables" {
   type        = map(string)
   default     = {}
 }
+
+# variable "sidecar_containers" {
+#   description = "Additional sidecar containers to deploy with the application"
+#   type = map(object({}))
+#   default = {}
+# }
