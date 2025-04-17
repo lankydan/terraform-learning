@@ -23,9 +23,3 @@ variable "additional_environment_variables" {
   type        = map(string)
   default     = {}
 }
-
-# variable "sidecar_containers" {
-#   description = "Additional sidecar containers to deploy with the application"
-#   type = map(object({}))
-#   default = {}
-# }
