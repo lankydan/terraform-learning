@@ -10,7 +10,7 @@
 
 output "container_id" {
   description = "the container id"
-  value       = kubernetes_pod.my-app.id
+  value       = kubernetes_deployment.my-app.id
 }
 
 # output "image_id" {

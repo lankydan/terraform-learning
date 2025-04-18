@@ -23,3 +23,9 @@ variable "additional_environment_variables" {
   type        = map(string)
   default     = {}
 }
+
+variable "replicas" {
+  description = "The number of replicas"
+  type        = number
+  default     = 1
+}

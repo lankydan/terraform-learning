@@ -12,4 +12,5 @@ module "my-app" {
   configuration = var.configuration
   my_variable = var.my_variable
   additional_environment_variables = var.additional_environment_variables
+  replicas = var.replicas
 }
