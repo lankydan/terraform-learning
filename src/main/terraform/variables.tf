@@ -6,6 +6,12 @@ variable "container_name" {
   default = "example-container-name"
 }
 
+variable "app_name" {
+  description = "application name"
+  type = string
+  default = "my-app"
+}
+
 variable "configuration" {
   description = "config file"
   type = any
