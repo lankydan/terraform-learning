@@ -15,6 +15,7 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.idea
 
 ### Kotlin ###
 .kotlin
@@ -43,3 +44,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+terraform.tfstate
+terraform.tfstate.backup
+.terraform
