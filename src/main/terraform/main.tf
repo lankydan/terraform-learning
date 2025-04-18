@@ -41,6 +41,8 @@ resource "kubernetes_pod" "my-app" {
       image_pull_policy = "IfNotPresent"
       image             = "my-app:0.0.5"
       name              = var.container_name
+      # Adds additional arguments to the pod, e.g. the image has already registered its own arguments and these `args`
+      # are added to them.
       args = ["${local.app_config_location}/config.yml"]
       env {
         name  = "MY_VARIABLE"
