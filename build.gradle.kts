@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.1.10"
+    alias(libs.plugins.kotlin.jvm)
     application
 }
 
@@ -11,6 +11,11 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.hoplite.core)
+    implementation(libs.hoplite.yaml)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.logback.classic)
     testImplementation(kotlin("test"))
 }
 

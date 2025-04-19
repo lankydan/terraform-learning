@@ -77,6 +77,6 @@ COPY --from=package /terraform-learning-1.0-SNAPSHOT /app/
 
 WORKDIR /app
 
-ENTRYPOINT [ "./bin/terraform-learning", "123" ]
+ENTRYPOINT [ "./bin/terraform-learning" ]
 
 #ENTRYPOINT ["tail", "-f", "/dev/null"]

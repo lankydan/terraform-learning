@@ -26,15 +26,11 @@ resource "kubernetes_deployment" "my-app" {
       spec {
         container {
           image_pull_policy = "IfNotPresent"
-          image             = "my-app:0.0.5"
+          image             = "my-app:0.0.7"
           name              = var.container_name
           # Adds additional arguments to the pod, e.g. the image has already registered its own arguments and these `args`
           # are added to them.
           args = ["${local.app_config_location}/config.yml"]
-          env {
-            name  = "MY_VARIABLE"
-            value = var.my_variable
-          }
           # Dynamic environment variables are useful if we have a module that doesn't know about what environment variables
           # the underlying application has, which is the case when you have a generic module that runs any application.
           dynamic "env" {
@@ -59,6 +55,29 @@ resource "kubernetes_deployment" "my-app" {
         }
       }
     }
+  }
+}
+
+resource "kubernetes_service" "my-app" {
+  metadata {
+    name = "${var.app_name}-service"
+    labels = {
+      App = var.app_name
+    }
+  }
+  spec {
+    port {
+      name        = "http"
+      port        = var.port
+      protocol    = "TCP"
+      target_port = var.port
+    }
+    # selector = local.common_labels
+    selector = {
+      App = var.app_name
+    }
+    type = "ClusterIP"
+    # type = "LoadBalancer"
   }
 }
 

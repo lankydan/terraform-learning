@@ -10,7 +10,7 @@ module "my-app" {
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration = var.configuration
-  my_variable = var.my_variable
+  port = var.port
   additional_environment_variables = var.additional_environment_variables
   replicas = var.replicas
 }

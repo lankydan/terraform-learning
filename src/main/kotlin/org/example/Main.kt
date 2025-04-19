@@ -1,17 +1,25 @@
 package org.example
 
-import java.io.File
+import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.addFileSource
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("Main")
 
 fun main(args: Array<String>) {
-    println("Hello World! - ${args.toList()}")
-    println("Running with environment variable - ${System.getenv("MY_VARIABLE")}")
-    println("Running with environment variable 2 - ${System.getenv("MY_VARIABLE_2")}")
-    val location = args[1]
-    val config = File(location).let { file -> if(file.exists()) file.readText() else "" }
-    println("Loaded configuration $location - $config")
-    var i = 0
-    while (true) {
-        println("log - ${i++}")
-        Thread.sleep(5000)
-    }
+    logger.info("Application starting")
+    val config = ConfigLoaderBuilder.default().addFileSource(args.first()).build().loadConfigOrThrow<Config>()
+    embeddedServer(Netty, port = config.port) {
+        routing {
+            get("/") {
+                logger.info("Received request")
+                call.respondText("Received request")
+            }
+        }
+    }.start(wait = true)
 }

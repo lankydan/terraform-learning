@@ -12,10 +12,10 @@ variable "configuration" {
   default = {}
 }
 
-variable "my_variable" {
-  description = "Set the log message in the application"
-  type        = string
-  default     = "default"
+variable "port" {
+  description = "Webserver port"
+  type        = number
+  default     = 8080
 }
 
 variable "additional_environment_variables" {
