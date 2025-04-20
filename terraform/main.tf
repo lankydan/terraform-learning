@@ -14,11 +14,19 @@ module "my-app" {
   additional_environment_variables = var.additional_environment_variables
   replicas = var.replicas
   app_name = var.app_name
+  namespace = var.namespace
+}
+
+resource "kubernetes_namespace" "my-app-namespace" {
+  metadata {
+    name = var.namespace
+  }
 }
 
 resource "kubernetes_deployment" "nginx" {
   metadata {
     name = "my-nginx"
+    namespace = var.namespace
     labels = {
       App = "${var.container_name}-nginx"
     }
@@ -77,6 +85,7 @@ resource "kubernetes_deployment" "nginx" {
 resource "kubernetes_service" "nginx" {
   metadata {
     name = "nginx-example"
+    namespace = var.namespace
   }
   spec {
     selector = {
@@ -96,6 +105,7 @@ resource "kubernetes_config_map" "nginx" {
   count = length("nginx_configuration") > 0 ? 1 : 0
   metadata {
     name = format("%s-config-map", "${var.container_name}-nginx")
+    namespace = var.namespace
   }
 
   data = {

@@ -1,6 +1,7 @@
 resource "kubernetes_deployment" "my-app" {
   metadata {
     name = var.container_name
+    namespace = var.namespace
     labels = {
       App = var.app_name
     }
@@ -61,6 +62,7 @@ resource "kubernetes_deployment" "my-app" {
 resource "kubernetes_service" "my-app" {
   metadata {
     name = "${var.app_name}-service"
+    namespace = var.namespace
     labels = {
       App = var.app_name
     }
@@ -72,12 +74,10 @@ resource "kubernetes_service" "my-app" {
       protocol    = "TCP"
       target_port = var.port
     }
-    # selector = local.common_labels
     selector = {
       App = var.app_name
     }
     type = "ClusterIP"
-    # type = "LoadBalancer"
   }
 }
 
@@ -85,6 +85,7 @@ resource "kubernetes_config_map" "my-app" {
   count = length("configuration") > 0 ? 1 : 0
   metadata {
     name = format("%s-config-map", var.app_name)
+    namespace = var.namespace
   }
 
   data = {

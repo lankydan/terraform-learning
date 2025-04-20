@@ -1,5 +1,11 @@
 # terraform loads all .tf files in the directory
 
+variable "namespace" {
+  description = "namespace"
+  type = string
+  default = "default"
+}
+
 variable "container_name" {
   description = "container name"
   type = string
