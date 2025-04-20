@@ -29,3 +29,9 @@ variable "replicas" {
   type        = number
   default     = 1
 }
+
+variable "nginx_configuration" {
+  description = "config file for nginx"
+  type = any
+  default = {}
+}
