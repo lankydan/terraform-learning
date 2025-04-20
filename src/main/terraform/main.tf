@@ -84,7 +84,7 @@ resource "kubernetes_service" "my-app" {
 resource "kubernetes_config_map" "my-app" {
   count = length("configuration") > 0 ? 1 : 0
   metadata {
-    name = format("%s-config-map", var.container_name)
+    name = format("%s-config-map", var.app_name)
   }
 
   data = {

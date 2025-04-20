@@ -11,7 +11,7 @@ locals {
 
     location / {
         # proxy_pass http://localhost:8080;
-        proxy_pass  http://my-app-service.default.svc.cluster.local:8080;
+        proxy_pass  http://${var.app_name}-service.${var.namespace}.svc.cluster.local:${var.app_port};
     }
 
     #error_page  404              /404.html;

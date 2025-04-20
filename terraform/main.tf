@@ -10,9 +10,10 @@ module "my-app" {
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration = var.configuration
-  port = var.port
+  port = var.app_port
   additional_environment_variables = var.additional_environment_variables
   replicas = var.replicas
+  app_name = var.app_name
 }
 
 resource "kubernetes_deployment" "nginx" {

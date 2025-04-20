@@ -1,9 +1,21 @@
 # terraform loads all .tf files in the directory
 
+variable "namespace" {
+  description = "namespace"
+  type = string
+  default = "default"
+}
+
 variable "container_name" {
   description = "container name"
   type = string
   default = "example-container-name"
+}
+
+variable "app_name" {
+  description = "application name"
+  type = string
+  default = "my-app"
 }
 
 variable "configuration" {
@@ -12,7 +24,7 @@ variable "configuration" {
   default = {}
 }
 
-variable "port" {
+variable "app_port" {
   description = "Webserver port"
   type        = number
   default     = 8080
