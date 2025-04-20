@@ -6,7 +6,7 @@ provider "kubernetes" {
 
 # Run apply from this terraform directory to run this module
 module "my-app" {
-  source = "../src/main/terraform"
+  source = "../app-service-1/src/main/terraform"
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration = var.configuration

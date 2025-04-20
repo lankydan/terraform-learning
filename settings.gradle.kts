@@ -3,3 +3,6 @@ plugins {
 }
 rootProject.name = "terraform-learning"
 
+include(
+    "app-service-1"
+)

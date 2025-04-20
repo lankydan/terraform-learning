@@ -12,9 +12,9 @@
 FROM eclipse-temurin:21-jdk-jammy as deps
 
 # Copy the mvnw wrapper with executable permissions.
-COPY --chmod=0755 gradlew gradlew
+COPY --chmod=0755 ../gradlew gradlew
 
-COPY gradle/ gradle/
+COPY ../gradle gradle/
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.m2 so that subsequent builds don't have to
