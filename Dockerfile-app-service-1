@@ -12,9 +12,10 @@
 FROM eclipse-temurin:21-jdk-jammy as deps
 
 # Copy the mvnw wrapper with executable permissions.
-COPY --chmod=0755 ../gradlew gradlew
+COPY --chmod=0755 gradlew gradlew
 
-COPY ../gradle gradle/
+COPY gradle gradle/
+
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.m2 so that subsequent builds don't have to
@@ -32,9 +33,9 @@ COPY ../gradle gradle/
 # use the relevant app server, e.g., using tomcat (https://hub.docker.com/_/tomcat/) as a base image.
 FROM deps as package
 
-COPY ./src src/
+COPY ./app-service-1/src src/
 
-RUN --mount=type=bind,source=build.gradle.kts,target=build.gradle.kts \
+RUN --mount=type=bind,source=app-service-1/build.gradle.kts,target=build.gradle.kts \
     --mount=type=bind,source=settings.gradle.kts,target=settings.gradle.kts \
     --mount=type=bind,source=gradle.properties,target=gradle.properties \
     ./gradlew assemble && \

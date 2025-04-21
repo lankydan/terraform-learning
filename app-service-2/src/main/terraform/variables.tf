@@ -12,16 +12,10 @@ variable "container_name" {
   default = "example-container-name"
 }
 
-variable "app_name_1" {
+variable "app_name" {
   description = "application name"
   type = string
-  default = "my-app-1"
-}
-
-variable "app_name_2" {
-  description = "application name"
-  type = string
-  default = "my-app-2"
+  default = "my-app"
 }
 
 variable "configuration" {
@@ -30,7 +24,7 @@ variable "configuration" {
   default = {}
 }
 
-variable "app_port" {
+variable "port" {
   description = "Webserver port"
   type        = number
   default     = 8080
@@ -46,10 +40,4 @@ variable "replicas" {
   description = "The number of replicas"
   type        = number
   default     = 1
-}
-
-variable "nginx_configuration" {
-  description = "config file for nginx"
-  type = any
-  default = {}
 }

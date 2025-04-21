@@ -5,7 +5,7 @@ provider "kubernetes" {
 }
 
 # Run apply from this terraform directory to run this module
-module "my-app" {
+module "app-service-1" {
   source = "../app-service-1/src/main/terraform"
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
@@ -13,7 +13,19 @@ module "my-app" {
   port = var.app_port
   additional_environment_variables = var.additional_environment_variables
   replicas = var.replicas
-  app_name = var.app_name
+  app_name = var.app_name_1
+  namespace = var.namespace
+}
+
+module "app-service-2" {
+  source = "../app-service-2/src/main/terraform"
+  container_name = var.container_name
+  # Configuration, or any of these variables could be hard coded here
+  configuration = var.configuration
+  port = var.app_port
+  additional_environment_variables = var.additional_environment_variables
+  replicas = var.replicas
+  app_name = var.app_name_2
   namespace = var.namespace
 }
 
