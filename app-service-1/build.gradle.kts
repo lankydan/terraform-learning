@@ -13,6 +13,8 @@ repositories {
 dependencies {
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.yaml)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)

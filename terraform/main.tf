@@ -14,6 +14,7 @@ module "app-service-1" {
   additional_environment_variables = var.additional_environment_variables
   replicas = var.replicas
   app_name = var.app_name_1
+  app_service_2_url = "${var.app_name_2}-service.${var.namespace}.svc.cluster.local:${var.app_port}"
   namespace = var.namespace
 }
 

@@ -18,6 +18,11 @@ variable "app_name" {
   default = "my-app"
 }
 
+variable "app_service_2_url" {
+  description = "url for app service 2"
+  type = string
+}
+
 variable "configuration" {
   description = "config file"
   type = any
