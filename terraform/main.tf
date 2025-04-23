@@ -4,6 +4,12 @@ provider "kubernetes" {
   config_context = "docker-desktop"
 }
 
+resource "kubernetes_namespace" "my-app-namespace" {
+  metadata {
+    name = var.namespace
+  }
+}
+
 # Run apply from this terraform directory to run this module
 module "app-service-1" {
   source = "../app-service-1/src/main/terraform"
@@ -30,98 +36,11 @@ module "app-service-2" {
   namespace = var.namespace
 }
 
-resource "kubernetes_namespace" "my-app-namespace" {
-  metadata {
-    name = var.namespace
-  }
-}
-
-resource "kubernetes_deployment" "nginx" {
-  metadata {
-    name = "my-nginx"
-    namespace = var.namespace
-    labels = {
-      App = "${var.container_name}-nginx"
-    }
-  }
-
-  spec {
-    replicas = 2
-    selector {
-      match_labels = {
-        App = "${var.container_name}-nginx"
-      }
-    }
-    template {
-      metadata {
-        labels = {
-          App = "${var.container_name}-nginx"
-        }
-      }
-      spec {
-        container {
-          image = "nginx:1.27.5"
-          name  = "my-nginx"
-          image_pull_policy = "Always"
-
-          port {
-            container_port = 80
-          }
-
-          volume_mount {
-            mount_path = local.nginx_config_location
-            name       = local.nginx_config_volume
-          }
-
-          # resources {
-          #   limits = {
-          #     cpu    = "0.5"
-          #     memory = "512Mi"
-          #   }
-          #   requests = {
-          #     cpu    = "250m"
-          #     memory = "50Mi"
-          #   }
-          # }
-        }
-        volume {
-          name = local.nginx_config_volume
-          config_map {
-            name = kubernetes_config_map.nginx[0].metadata[0].name
-          }
-        }
-      }
-    }
-  }
-}
-
-resource "kubernetes_service" "nginx" {
-  metadata {
-    name = "nginx-example"
-    namespace = var.namespace
-  }
-  spec {
-    selector = {
-      App = kubernetes_deployment.nginx.spec.0.template.0.metadata[0].labels.App
-    }
-    port {
-      node_port   = 30201
-      port        = 80
-      target_port = 80
-    }
-
-    type = "NodePort"
-  }
-}
-
-resource "kubernetes_config_map" "nginx" {
-  count = length("nginx_configuration") > 0 ? 1 : 0
-  metadata {
-    name = format("%s-config-map", "${var.container_name}-nginx")
-    namespace = var.namespace
-  }
-
-  data = {
-    "default.conf" = local.nginx_config
-  }
+module "nginx" {
+  source = "./external-dependencies/nginx"
+  container_name = var.container_name
+  app_name_1 = var.app_name_1
+  app_port = var.app_port
+  replicas = 2
+  namespace = var.namespace
 }

@@ -1,5 +1,3 @@
-# terraform loads all .tf files in the directory
-
 variable "namespace" {
   description = "namespace"
   type = string
@@ -18,32 +16,20 @@ variable "app_name_1" {
   default = "my-app-1"
 }
 
-variable "app_name_2" {
-  description = "application name"
-  type = string
-  default = "my-app-2"
-}
-
-variable "configuration" {
-  description = "config file"
-  type = any
-  default = {}
-}
-
 variable "app_port" {
   description = "Webserver port"
   type        = number
   default     = 8080
 }
 
-variable "additional_environment_variables" {
-  description = "extra env variables"
-  type        = map(string)
-  default     = {}
-}
-
 variable "replicas" {
   description = "The number of replicas"
   type        = number
   default     = 1
+}
+
+variable "nginx_configuration" {
+  description = "config file for nginx"
+  type = any
+  default = {}
 }
