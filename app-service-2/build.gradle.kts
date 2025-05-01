@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.jib)
     application
 }
 
@@ -26,8 +27,18 @@ kotlin {
     jvmToolchain(21)
 }
 
-
+tasks.build.get().dependsOn(tasks.jib)
 
 application {
     mainClass = "org.example.MainKt"
+}
+
+jib {
+    to {
+        image = "${project.findProperty("dockerRepository")}:app-service-2_0.0.3"
+        auth {
+            username = project.findProperty("dockerUsername") as String
+            password = project.findProperty("dockerPassword") as String
+        }
+    }
 }

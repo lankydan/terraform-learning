@@ -47,3 +47,15 @@ variable "replicas" {
   type        = number
   default     = 1
 }
+
+variable "dockerhub_username" {
+  description = "Dockerhub username"
+  type        = string
+  default     = ""
+}
+
+variable "dockerhub_password" {
+  description = "Dockerhub password"
+  type        = string
+  default     = ""
+}
