@@ -4,15 +4,28 @@ provider "kubernetes" {
   config_context = "docker-desktop"
 }
 
+provider "helm" {
+  kubernetes {
+    config_path    = "~/.kube/config"
+    config_context = "docker-desktop"
+  }
+}
+
 resource "kubernetes_namespace" "my-app-namespace" {
   metadata {
     name = var.namespace
   }
 }
 
+resource "kubernetes_namespace" "ingress-nginx-namespace" {
+  metadata {
+    name = "${var.namespace}-ingress"
+  }
+}
+
 resource "kubernetes_secret" "docker_registry" {
   metadata {
-    name = "docker-registry-secret"
+    name      = "docker-registry-secret"
     namespace = var.namespace
   }
 
@@ -34,11 +47,11 @@ module "app-service-1" {
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration                    = var.configuration
-  port                             = var.app_port
+  port                             = local.app_port
   additional_environment_variables = var.additional_environment_variables
   replicas                         = var.replicas
-  app_name                         = var.app_name_1
-  app_service_2_url                = "${var.app_name_2}-service.${var.namespace}.svc.cluster.local:${var.app_port}"
+  app_name                         = local.app_name_1
+  app_service_2_url                = local.app_service_2_url
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
 }
@@ -48,19 +61,28 @@ module "app-service-2" {
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration                    = var.configuration
-  port                             = var.app_port
+  port                             = local.app_port
   additional_environment_variables = var.additional_environment_variables
   replicas                         = var.replicas
-  app_name                         = var.app_name_2
+  app_name                         = local.app_name_2
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
 }
 
-module "nginx" {
-  source         = "./external-dependencies/nginx"
-  container_name = var.container_name
-  app_name_1     = var.app_name_1
-  app_port       = var.app_port
-  replicas       = 2
-  namespace      = var.namespace
+module "ingress" {
+  source            = "./ingress"
+  namespace         = var.namespace
+  ingress_namespace = kubernetes_namespace.ingress-nginx-namespace.metadata[0].name
+  ingress_paths = [
+    {
+      path = "/app1"
+      # Because the `ingress` lives in the same namespace as the application services, it can auto resolve the full service name of
+      # "${local.app_name_1}-service.${var.namespace}.svc.cluster.local" by only providing "${local.app_name_1}-service".
+      # If it was in another namespace, the full service name shown above would need to be used (with a different namespace of course).
+      service_name = "${local.app_name_1}-service"
+      service_port = local.app_port
+    }
+  ]
+  replicas = 2
+  depends_on = [module.app-service-1]
 }

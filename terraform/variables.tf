@@ -12,28 +12,10 @@ variable "container_name" {
   default = "example-container-name"
 }
 
-variable "app_name_1" {
-  description = "application name"
-  type = string
-  default = "my-app-1"
-}
-
-variable "app_name_2" {
-  description = "application name"
-  type = string
-  default = "my-app-2"
-}
-
 variable "configuration" {
   description = "config file"
   type = any
   default = {}
-}
-
-variable "app_port" {
-  description = "Webserver port"
-  type        = number
-  default     = 8080
 }
 
 variable "additional_environment_variables" {
