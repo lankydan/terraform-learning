@@ -67,6 +67,7 @@ module "app-service-2" {
   app_name                         = local.app_name_2
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
+  depends_on = [module.postgres]
 }
 
 module "ingress" {
@@ -83,6 +84,11 @@ module "ingress" {
       service_port = local.app_port
     }
   ]
-  replicas = 2
+  replicas = 1
   depends_on = [module.app-service-1]
+}
+
+module "postgres" {
+  source = "./database"
+  namespace = var.namespace
 }
