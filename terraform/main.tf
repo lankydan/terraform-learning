@@ -11,6 +11,8 @@ provider "helm" {
   }
 }
 
+provider "random" {}
+
 resource "kubernetes_namespace" "my-app-namespace" {
   metadata {
     name = var.namespace
@@ -39,6 +41,30 @@ resource "kubernetes_secret" "docker_registry" {
     })
   }
   type = "kubernetes.io/dockerconfigjson"
+}
+
+resource "kubernetes_secret" "postgres" {
+  metadata {
+    name      = "postgres-secret"
+    namespace = var.namespace
+  }
+
+  data = {
+    "admin_username" = "admin"
+    "admin_password" = random_password.postgres_passwords["admin"].result
+    "user_username" = "user"
+    "user_password" = random_password.postgres_passwords["user"].result
+  }
+}
+
+resource "random_password" "postgres_passwords" {
+  for_each = toset(["admin", "user"])
+
+  length  = 10
+  special = true
+  upper   = true
+  lower   = true
+  numeric = true
 }
 
 # Run apply from this terraform directory to run this module
@@ -91,4 +117,5 @@ module "ingress" {
 module "postgres" {
   source = "./database"
   namespace = var.namespace
+  user_passwords_secret = kubernetes_secret.postgres.metadata[0].name
 }

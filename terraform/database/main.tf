@@ -28,12 +28,22 @@ resource "kubernetes_deployment" "postgres" {
           # Needs secrets or something to obfuscate the password
           env {
             name  = "POSTGRES_USER"
-            value = "admin"
+            value_from {
+              secret_key_ref {
+                name = var.user_passwords_secret
+                key  = "admin_username"
+              }
+            }
           }
 
           env {
             name  = "POSTGRES_PASSWORD"
-            value = "admin_password"
+            value_from {
+              secret_key_ref {
+                name = var.user_passwords_secret
+                key  = "admin_password"
+              }
+            }
           }
 
           env {
