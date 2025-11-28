@@ -12,8 +12,12 @@ repositories {
 }
 
 dependencies {
+    implementation(libs.hikaricp)
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.yaml)
+    implementation(libs.kapper)
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
