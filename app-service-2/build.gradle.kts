@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.logback.classic)
+    runtimeOnly(libs.postgres.driver)
     testImplementation(kotlin("test"))
 }
 
@@ -39,7 +40,7 @@ application {
 
 jib {
     to {
-        image = "${project.findProperty("dockerRepository")}:app-service-2_0.0.3"
+        image = "${project.findProperty("dockerRepository")}:app-service-2_0.0.4"
         auth {
             username = project.findProperty("dockerUsername") as String
             password = project.findProperty("dockerPassword") as String

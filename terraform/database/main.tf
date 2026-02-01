@@ -28,27 +28,29 @@ resource "kubernetes_deployment" "postgres" {
           # Needs secrets or something to obfuscate the password
           env {
             name  = "POSTGRES_USER"
-            value_from {
-              secret_key_ref {
-                name = var.user_passwords_secret
-                key  = "admin_username"
-              }
-            }
+            value = "postgres"
+            # value_from {
+            #   secret_key_ref {
+            #     name = var.user_passwords_secret
+            #     key  = "admin_username"
+            #   }
+            # }
           }
 
           env {
             name  = "POSTGRES_PASSWORD"
-            value_from {
-              secret_key_ref {
-                name = var.user_passwords_secret
-                key  = "admin_password"
-              }
-            }
+            value = "postgres"
+            # value_from {
+            #   secret_key_ref {
+            #     name = var.user_passwords_secret
+            #     key  = "admin_password"
+            #   }
+            # }
           }
 
           env {
             name  = "POSTGRES_DB"
-            value = "example_db"
+            value = "postgres"
           }
 
           volume_mount {
@@ -84,6 +86,7 @@ resource "kubernetes_service" "postgres" {
       port        = 5432
       target_port = 5432
     }
+    type = "ClusterIP"
   }
 }
 

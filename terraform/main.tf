@@ -5,7 +5,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     config_path    = "~/.kube/config"
     config_context = "docker-desktop"
   }
@@ -67,6 +67,12 @@ resource "random_password" "postgres_passwords" {
   numeric = true
 }
 
+module "postgres" {
+  source = "./database"
+  namespace = var.namespace
+  user_passwords_secret = kubernetes_secret.postgres.metadata[0].name
+}
+
 # Run apply from this terraform directory to run this module
 module "app-service-1" {
   source                           = "../app-service-1/src/main/terraform"
@@ -93,6 +99,11 @@ module "app-service-2" {
   app_name                         = local.app_name_2
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
+  jdbcUrl = module.postgres.jdbcUrl
+  # hard coded
+  schema = "postgres"
+  username = "postgres"
+  password = "postgres"
   depends_on = [module.postgres]
 }
 
@@ -112,10 +123,4 @@ module "ingress" {
   ]
   replicas = 1
   depends_on = [module.app-service-1]
-}
-
-module "postgres" {
-  source = "./database"
-  namespace = var.namespace
-  user_passwords_secret = kubernetes_secret.postgres.metadata[0].name
 }

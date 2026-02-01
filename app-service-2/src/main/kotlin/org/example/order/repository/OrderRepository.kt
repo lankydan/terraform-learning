@@ -8,7 +8,7 @@ class OrderRepository(private val dataSource: DataSource) {
     fun insert(id: String) {
         dataSource.connection.use { connection ->
             connection.execute(
-                sql = "INSERT INTO orders (id) VALUES :id",
+                sql = "INSERT INTO orders (id) VALUES (:id)",
                 "id" to id
             )
         }

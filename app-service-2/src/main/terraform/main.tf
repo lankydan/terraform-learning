@@ -30,7 +30,7 @@ resource "kubernetes_deployment" "my-app" {
         }
         container {
           image_pull_policy = "IfNotPresent"
-          image             = "dannewton320/learning:app-service-2_0.0.3"
+          image             = "lankydan/learning:app-service-2_0.0.4"
           name              = var.container_name
           # Adds additional arguments to the pod, e.g. the image has already registered its own arguments and these `args`
           # are added to them.
