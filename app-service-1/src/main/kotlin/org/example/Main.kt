@@ -5,6 +5,7 @@ import com.sksamuel.hoplite.addFileSource
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -21,9 +22,11 @@ fun main(args: Array<String>) {
     val client = HttpClient(OkHttp)
     embeddedServer(Netty, port = config.port) {
         routing {
-            get("/") {
+            get("/{id}") {
                 logger.info("Received request")
-                call.respondText(client.get("http://${config.appService2Url}").bodyAsText())
+                call.respondText(
+                    client.post("http://${config.appService2Url}/${call.pathParameters["id"]}").bodyAsText()
+                )
             }
         }
     }.start(wait = true)

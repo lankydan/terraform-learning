@@ -29,7 +29,7 @@ resource "kubernetes_deployment" "my-app" {
           name = var.image_pull_secret
         }
         container {
-          image_pull_policy = "IfNotPresent"
+          image_pull_policy = var.image_pull_policy
           image             = "lankydan/learning:app-service-1_0.0.4"
           name              = var.container_name
           # Adds additional arguments to the pod, e.g. the image has already registered its own arguments and these `args`
