@@ -28,7 +28,10 @@ resource "kubernetes_ingress_v1" "ingress" {
       "kubernetes.io/ingress.class"                = "nginx"
       # Rewrites all requests to the root path. So if `/app` routes to `app-service`, the url that the `app-service`
       # itself will receive will still be `/` instead of `/app`.
-      "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+      # /$2 is needed to ensure that the path parameters from the original request remain (how it literally works,
+      # I'm not so sure). This ties up with the regex in the path property of the spec below.
+      "nginx.ingress.kubernetes.io/rewrite-target" = "/$2"
+      "nginx.ingress.kubernetes.io/use-regex" = "true"
     }
   }
 
@@ -38,7 +41,9 @@ resource "kubernetes_ingress_v1" "ingress" {
         dynamic "path" {
           for_each = var.ingress_paths
           content {
-            path = path.value["path"]
+            # path = path.value["path"]
+            path = "/${path.value["path"]}(/|$)(.*)"
+            path_type = "ImplementationSpecific"
             backend {
               service {
                 name = path.value["service_name"]

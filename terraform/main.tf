@@ -52,8 +52,8 @@ resource "kubernetes_secret" "postgres" {
   data = {
     "admin_username" = "admin"
     "admin_password" = random_password.postgres_passwords["admin"].result
-    "user_username" = "user"
-    "user_password" = random_password.postgres_passwords["user"].result
+    "user_username"  = "user"
+    "user_password"  = random_password.postgres_passwords["user"].result
   }
 }
 
@@ -68,14 +68,15 @@ resource "random_password" "postgres_passwords" {
 }
 
 module "postgres" {
-  source = "./database"
-  namespace = var.namespace
+  source                = "./database"
+  namespace             = var.namespace
+  schema                = "postgres"
   user_passwords_secret = kubernetes_secret.postgres.metadata[0].name
 }
 
 # Run apply from this terraform directory to run this module
 module "app-service-1" {
-  source                           = "../app-service-1/src/main/terraform"
+  source         = "../app-service-1/src/main/terraform"
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration                    = var.configuration
@@ -86,10 +87,11 @@ module "app-service-1" {
   app_service_2_url                = local.app_service_2_url
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
+  image_pull_policy = var.image_pull_policy
 }
 
 module "app-service-2" {
-  source                           = "../app-service-2/src/main/terraform"
+  source         = "../app-service-2/src/main/terraform"
   container_name = var.container_name
   # Configuration, or any of these variables could be hard coded here
   configuration                    = var.configuration
@@ -99,11 +101,12 @@ module "app-service-2" {
   app_name                         = local.app_name_2
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
-  jdbcUrl = module.postgres.jdbcUrl
+  image_pull_policy                = var.image_pull_policy
+  jdbcUrl                          = module.postgres.jdbcUrl
   # hard coded
-  schema = "postgres"
-  username = "postgres"
-  password = "postgres"
+  schema     = "postgres"
+  username   = "postgres"
+  password   = "postgres"
   depends_on = [module.postgres]
 }
 
@@ -113,7 +116,7 @@ module "ingress" {
   ingress_namespace = kubernetes_namespace.ingress-nginx-namespace.metadata[0].name
   ingress_paths = [
     {
-      path = "/app1"
+      path = "app1"
       # Because the `ingress` lives in the same namespace as the application services, it can auto resolve the full service name of
       # "${local.app_name_1}-service.${var.namespace}.svc.cluster.local" by only providing "${local.app_name_1}-service".
       # If it was in another namespace, the full service name shown above would need to be used (with a different namespace of course).
@@ -121,6 +124,6 @@ module "ingress" {
       service_port = local.app_port
     }
   ]
-  replicas = 1
+  replicas   = 1
   depends_on = [module.app-service-1]
 }
