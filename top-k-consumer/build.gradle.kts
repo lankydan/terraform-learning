@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.jib)
     alias(libs.plugins.shadow)
     application
 }
@@ -38,15 +37,7 @@ application {
     mainClass = "org.example.MainKt"
 }
 
-jib {
-    to {
-        image = "${project.findProperty("dockerRepository")}:app-service-1_0.0.4"
-        auth {
-            username = project.findProperty("dockerUsername") as String
-            password = project.findProperty("dockerPassword") as String
-        }
-    }
-}
+
 
 tasks.shadowJar {
     archiveBaseName.set("flink-job")

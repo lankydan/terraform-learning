@@ -1,80 +1,61 @@
 # terraform/flink/main.tf
 
-# This configuration assumes the Docker provider is configured in the root or a parent module.
-# For simplicity, we're defining Docker containers for a local Flink setup.
-# In a real-world scenario, you would provision cloud VMs (e.g., AWS EC2, GCP Compute Engine)
-# and deploy Flink on them, possibly using EKS/GKE for Kubernetes deployments.
+resource "helm_release" "flink_operator" {
+  name       = "flink-kubernetes-operator"
+  repository = "https://downloads.apache.org/flink/flink-kubernetes-operator-1.7.0" # latest is 1.15.0
+  chart      = "flink-kubernetes-operator"
+  namespace  = "flink-operator-system"
+  create_namespace = true
 
-# Build the custom Flink image with the top-k-consumer job JAR
-resource "docker_image" "flink_job_image" {
-  name = "flink-job-runner:latest"
-  build {
-    context    = "../../top-k-consumer" # Path to the Dockerfile and build context
-    dockerfile = "Dockerfile"
-  }
-  # Trigger rebuild if the JAR changes
-  triggers = {
-    # Using a hash of the JAR file as a trigger
-    # This assumes the JAR is built before terraform apply
-    jar_hash = filebase64sha256("../../top-k-consumer/build/libs/flink-job-1.0-SNAPSHOT.jar")
+  set {
+    name  = "watchNamespaces"
+    value = "{default}"
   }
 }
 
-# Flink JobManager Container
-resource "docker_container" "flink_jobmanager" {
-  name  = "flink_jobmanager"
-  image = docker_image.flink_job_image.name # Use the custom image
-  ports {
-    internal = 8081
-    external = 8081 # Flink Web UI
+resource "kubernetes_manifest" "flink_cluster" {
+  manifest = {
+    apiVersion = "flink.apache.org/v1beta1"
+    kind       = "FlinkDeployment"
+    metadata = {
+      name      = "basic-example"
+      namespace = "default"
+    }
+    spec = {
+      image = "flink:1.17" # This assumes a standard Flink image.
+      flinkVersion = "v1_17"
+      jobManager = {
+        resource = { memory = "1024m", cpu = 1 }
+      }
+      taskManager = {
+        resource = { memory = "1024m", cpu = 1 }
+      }
+      job = {
+        # This jarURI assumes the 'flink-job-1.0-SNAPSHOT.jar' is made available
+        # inside the Flink TaskManager/JobManager pods.
+        # This typically requires either:
+        # 1. Building a custom Flink Docker image that includes this JAR.
+        # 2. Mounting the JAR into the pods via a Persistent Volume.
+        # Since "no explicit docker commands" was requested, this Terraform config
+        # does not manage the creation of such a custom image or volume.
+        # The user would need to ensure the JAR is present at this path within the Flink container.
+        jarURI = "local:///opt/flink/usrlib/flink-job-1.0-SNAPSHOT.jar"
+        entryClass = "org.example.MainKt" # Specify the main class of the Flink job
+        parallelism = 1 # Set to 1 for simplicity for local testing
+        upgradeMode = "stateless"
+      }
+    }
   }
-  command = ["jobmanager"]
-  env = [
-    "FLINK_PROPERTIES=jobmanager.rpc.address: flink_jobmanager"
-  ]
-  networks_advanced {
-    name = docker_network.flink_network.name
-  }
+  depends_on = [helm_release.flink_operator]
 }
 
-# Flink TaskManager Container
-resource "docker_container" "flink_taskmanager" {
-  name  = "flink_taskmanager"
-  image = docker_image.flink_job_image.name # Use the custom image
-  command = ["taskmanager"]
-  env = [
-    "FLINK_PROPERTIES=jobmanager.rpc.address: flink_jobmanager",
-    "TASK_MANAGER_NUMBER_OF_TASK_SLOTS=2" # Number of slots per TaskManager
-  ]
-  networks_advanced {
-    name = docker_network.flink_network.name
-  }
-  depends_on = [docker_container.flink_jobmanager]
+# Output the Flink Kubernetes Operator status or endpoint if available
+output "flink_operator_namespace" {
+  description = "Namespace where the Flink Kubernetes Operator is deployed"
+  value       = helm_release.flink_operator.namespace
 }
 
-# Docker Network for Flink containers
-resource "docker_network" "flink_network" {
-  name = "flink-network"
-  attachable = true
+output "flink_deployment_name" {
+  description = "Name of the FlinkDeployment custom resource"
+  value       = kubernetes_manifest.flink_cluster.manifest.metadata.name
 }
-
-# Submit the Flink job
-resource "null_resource" "submit_flink_job" {
-  depends_on = [
-    docker_container.flink_jobmanager,
-    docker_container.flink_taskmanager # Wait for TaskManager to be ready as well
-  ]
-
-  provisioner "local-exec" {
-    # This command will execute on the machine running Terraform
-    command = "docker exec ${docker_container.flink_jobmanager.name} /opt/flink/bin/flink run -d -c org.example.MainKt /opt/flink/opt/flink-job-1.0-SNAPSHOT.jar"
-    # The -d flag runs the job in detached mode
-  }
-}
-
-# Output the JobManager UI URL
-output "flink_jobmanager_ui_url" {
-  description = "URL for the Flink JobManager Web UI"
-  value       = "http://localhost:8081" # Assuming Docker is running locally
-}
-
