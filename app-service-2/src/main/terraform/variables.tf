@@ -47,3 +47,33 @@ variable "image_pull_secret" {
   type        = string
   default     = "docker-registry-secret"
 }
+
+variable "image_pull_policy" {
+  description = "Image pull policy"
+  type        = string
+  default     = "IfNotPresent"
+}
+
+## database start
+
+variable "jdbcUrl" {
+  description = "jdbcUrl"
+  type        = string
+}
+
+variable "schema" {
+  description = "schema"
+  type        = string
+}
+
+variable "username" {
+  description = "username"
+  type        = string
+}
+
+variable "password" {
+  description = "password"
+  type        = string
+}
+
+## database end

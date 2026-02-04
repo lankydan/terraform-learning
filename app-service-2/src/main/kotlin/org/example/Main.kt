@@ -2,6 +2,7 @@ package org.example
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.addFileSource
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.response.respondText
@@ -29,11 +30,15 @@ fun main(args: Array<String>) {
                 }
                 post("/{id}") {
                     when (val id = call.pathParameters["id"]) {
-                        null -> logger.warn("Order [failed]: Unknown id")
+                        null -> {
+                            logger.warn("Order [failed]: Unknown id")
+                            call.respondText("Failed to insert", status = HttpStatusCode.BadRequest)
+                        }
                         else -> {
                             logger.info("Order [start]: $id")
                             orderRepository.insert(id)
                             logger.info("Order [success]: $id")
+                            call.respondText("Inserted order $id")
                         }
                     }
                 }

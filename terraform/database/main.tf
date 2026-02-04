@@ -28,32 +28,40 @@ resource "kubernetes_deployment" "postgres" {
           # Needs secrets or something to obfuscate the password
           env {
             name  = "POSTGRES_USER"
-            value_from {
-              secret_key_ref {
-                name = var.user_passwords_secret
-                key  = "admin_username"
-              }
-            }
+            value = local.username
+            # value_from {
+            #   secret_key_ref {
+            #     name = var.user_passwords_secret
+            #     key  = "admin_username"
+            #   }
+            # }
           }
 
           env {
             name  = "POSTGRES_PASSWORD"
-            value_from {
-              secret_key_ref {
-                name = var.user_passwords_secret
-                key  = "admin_password"
-              }
-            }
+            value = local.password
+            # value_from {
+            #   secret_key_ref {
+            #     name = var.user_passwords_secret
+            #     key  = "admin_password"
+            #   }
+            # }
           }
 
           env {
             name  = "POSTGRES_DB"
-            value = "example_db"
+            value = local.database
           }
 
           volume_mount {
             name       = local.volume_name
             mount_path = local.volume_path
+          }
+
+          volume_mount {
+            name       = "init-script"
+            mount_path = "/docker-entrypoint-initdb.d" # Special Postgres directory
+            read_only  = true
           }
         }
 
@@ -61,6 +69,13 @@ resource "kubernetes_deployment" "postgres" {
           name = local.volume_name
           persistent_volume_claim {
             claim_name = kubernetes_persistent_volume_claim.postgres.metadata[0].name
+          }
+        }
+
+        volume {
+          name = "init-script"
+          config_map {
+            name = kubernetes_config_map.postgres_init_script.metadata[0].name
           }
         }
       }
@@ -84,6 +99,7 @@ resource "kubernetes_service" "postgres" {
       port        = 5432
       target_port = 5432
     }
+    type = "ClusterIP"
   }
 }
 
@@ -103,5 +119,21 @@ resource "kubernetes_persistent_volume_claim" "postgres" {
         storage = "10Gi"
       }
     }
+  }
+}
+
+resource "kubernetes_config_map" "postgres_init_script" {
+  metadata {
+    name = "postgres-init-script"
+    namespace = var.namespace
+  }
+
+  data = {
+    "init-schema.sql" = <<EOF
+      CREATE SCHEMA IF NOT EXISTS ${var.schema};
+      CREATE ROLE ${local.username} WITH LOGIN PASSWORD '${local.password}';
+      GRANT ALL PRIVILEGES ON SCHEMA ${var.schema} TO ${local.username};
+      ALTER ROLE ${local.username} SET search_path TO ${var.schema}, public;
+EOF
   }
 }
