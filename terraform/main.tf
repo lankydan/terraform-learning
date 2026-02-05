@@ -127,3 +127,10 @@ module "ingress" {
   replicas   = 1
   depends_on = [module.app-service-1]
 }
+
+module "top-k-consumer" {
+  source            = "../top-k-consumer/src/main/terraform"
+  namespace         = var.namespace
+  image_pull_secret = kubernetes_secret.docker_registry.metadata[0].name
+  image_pull_policy = var.image_pull_policy
+}

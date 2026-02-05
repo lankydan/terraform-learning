@@ -1,9 +1,6 @@
-# Use the official Flink base image
-FROM flink:1.17.1-scala_2.12
+# Use the official Flink 1.17 image as a base
+FROM flink:1.17
 
-# Set the Flink opt directory as the working directory
-WORKDIR /opt/flink/opt
-
-# Copy the Flink job JAR into the image
-# This assumes the shadowJar task will produce a JAR named flink-job-1.0-SNAPSHOT.jar
-COPY build/libs/flink-job-1.0-SNAPSHOT.jar flink-job-1.0-SNAPSHOT.jar
+# Copy the fat JAR produced by the shadowJar task into Flink's user library directory.
+# Flink automatically adds JARs from this directory to its classpath.
+COPY build/libs/flink-job-1.0-SNAPSHOT.jar /opt/flink/usrlib/

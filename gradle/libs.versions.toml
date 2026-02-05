@@ -3,6 +3,7 @@ flink = "1.17.1"
 hoplite = "2.9.0"
 jib = "3.4.5"
 shadow = "8.1.1"
+bmuschko-docker = "9.4.0"
 hikaricp = "6.3.0"
 kapper = "1.4.0"
 koin-bom = "4.0.4"
@@ -37,4 +38,5 @@ postgres-driver = { module = "org.postgresql:postgresql", version.ref = "postgre
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+bmuschko-docker = { id = "com.bmuschko.docker-remote-api", version.ref = "bmuschko-docker" }
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

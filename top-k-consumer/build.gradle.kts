@@ -1,6 +1,10 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.bmuschko.docker)
     application
 }
 
@@ -31,13 +35,9 @@ kotlin {
     jvmToolchain(21)
 }
 
-tasks.build.get().dependsOn(tasks.jib)
-
 application {
     mainClass = "org.example.MainKt"
 }
-
-
 
 tasks.shadowJar {
     archiveBaseName.set("flink-job")
@@ -48,4 +48,35 @@ tasks.shadowJar {
         attributes["Main-Class"] = "org.example.MainKt"
     }
     configurations = listOf(project.configurations.runtimeClasspath.get())
+}
+
+// Configure Docker tasks using the bmuschko plugin
+// Need to sort out the repository stuff eventually (not sharing a single repository)
+//val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
+//val imageName = "$dockerRepo/top-k-consumer:${project.version}"
+val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
+val imageName = "$dockerRepo:top-k-consumer_${project.version}"
+
+tasks.create<DockerBuildImage>("dockerBuildImage") {
+    dependsOn(tasks.shadowJar)
+    inputDir.set(project.projectDir)
+    images.add(imageName)
+}
+
+tasks.create<DockerPushImage>("dockerPushImage") {
+    dependsOn(tasks.named("dockerBuildImage"))
+    images.add(imageName)
+    registryCredentials {
+        username.set(project.findProperty("dockerUsername") as String? ?: "")
+        password.set(project.findProperty("dockerPassword") as String? ?: "")
+        email.set("noreply@example.com") // Required but not used for modern Docker registries
+        url.set("docker.io") // Explicitly set Docker Hub URL for credentials
+    }
+}
+
+// Optional: create a lifecycle task to combine build and push
+tasks.register("buildAndPushFlinkImage") {
+    dependsOn(tasks.named("dockerPushImage"))
+    group = "docker"
+    description = "Builds and pushes the Flink Docker image."
 }
