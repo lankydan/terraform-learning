@@ -18,7 +18,7 @@ data class PersistenceConfig(
     val intervalSeconds: Long = 2
 )
 
-fun loadConfig(path: String = "config.yaml"): Config {
+fun loadConfig(path: String = "/opt/flink/conf/app-config.yaml"): Config {
     return ConfigLoaderBuilder.default()
         .addSource(PropertySource.file(File(path), optional = true))
         .build()

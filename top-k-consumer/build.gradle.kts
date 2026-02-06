@@ -32,7 +32,8 @@ tasks.test {
     useJUnitPlatform()
 }
 kotlin {
-    jvmToolchain(21)
+//    jvmToolchain(21)
+    jvmToolchain(11)
 }
 
 application {
@@ -55,7 +56,7 @@ tasks.shadowJar {
 //val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
 //val imageName = "$dockerRepo/top-k-consumer:${project.version}"
 val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
-val imageName = "$dockerRepo:top-k-consumer_${project.version}"
+val imageName = "$dockerRepo:top-k-consumer-flink_${project.version}"
 
 tasks.create<DockerBuildImage>("dockerBuildImage") {
     dependsOn(tasks.shadowJar)
