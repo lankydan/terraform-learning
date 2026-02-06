@@ -1,3 +1,42 @@
+# resource "kubernetes_service_account" "postgres_sa" {
+#   metadata {
+#     name      = "${local.postgres_name}-sa"
+#     namespace = var.namespace
+#   }
+# }
+#
+# resource "kubernetes_role" "postgres_endpointslice_manager" {
+#   metadata {
+#     name      = "${local.postgres_name}-endpointslice-manager"
+#     namespace = var.namespace
+#   }
+#
+#   rule {
+#     api_groups = ["discovery.k8s.io"]
+#     resources  = ["endpointslices"]
+#     verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+#   }
+# }
+#
+# resource "kubernetes_role_binding" "postgres_endpointslice_binding" {
+#   metadata {
+#     name      = "${local.postgres_name}-endpointslice-binding"
+#     namespace = var.namespace
+#   }
+#
+#   role_ref {
+#     api_group = "rbac.authorization.k8s.io"
+#     kind      = "Role"
+#     name      = kubernetes_role.postgres_endpointslice_manager.metadata[0].name
+#   }
+#
+#   subject {
+#     kind      = "ServiceAccount"
+#     name      = kubernetes_service_account.postgres_sa.metadata[0].name
+#     namespace = var.namespace
+#   }
+# }
+
 resource "kubernetes_deployment" "postgres" {
   metadata {
     name      = local.postgres_name
@@ -21,6 +60,7 @@ resource "kubernetes_deployment" "postgres" {
       }
 
       spec {
+        # service_account_name = kubernetes_service_account.postgres_sa.metadata[0].name
         container {
           name  = "postgres"
           image = "postgres:15"
