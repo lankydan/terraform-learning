@@ -1,64 +1,16 @@
-# terraform/flink/main.tf
-
+# Not sure I actually need this operator
 resource "helm_release" "flink_operator" {
-  name       = "flink-kubernetes-operator"
-  chart      = "https://archive.apache.org/dist/flink/flink-kubernetes-operator-1.13.0/flink-kubernetes-operator-1.13.0-helm.tgz"
-  # namespace  = "flink-operator-system"
-  # create_namespace = true
+  name      = "flink-kubernetes-operator"
+  chart     = "https://archive.apache.org/dist/flink/flink-kubernetes-operator-1.13.0/flink-kubernetes-operator-1.13.0-helm.tgz"
   namespace = var.namespace
-  version    = "1.13.0" # Explicitly set the version from the URL
-  set = [{
-    name  = "webhook.create"
-    value = "false"
-  }]
-
-  # set = {
-  #   name  = "watchNamespaces"
-  #   value = "{default}"
-  # }
+  version = "1.13.0"
+  set = [
+    {
+      name  = "webhook.create"
+      value = "false"
+    }
+  ]
 }
-# image_pull_secrets {
-#   name = var.image_pull_secret
-# }
-
-# resource "kubernetes_manifest" "flink_cluster" {
-#   manifest = {
-#     apiVersion = "flink.apache.org/v1beta1"
-#     kind       = "FlinkDeployment"
-#     metadata = {
-#       name      = "top-k-consumer-flink-app"
-#       namespace = "default"
-#     }
-#     spec = {
-#       image = "${var.docker_repository}/top-k-consumer:1.0-SNAPSHOT" # Image will be built and pushed by Gradle
-#       flinkVersion = "v1_17"
-#       flinkConfiguration = {
-#         "taskmanager.numberOfTaskSlots" = "1"
-#       }
-#       # serviceAccount = "flink"
-#       jobManager = {
-#         resource = { memory = "1024m", cpu = 1 }
-#         replication = 1
-#       }
-#       taskManager = {
-#         resource = { memory = "1024m", cpu = 1 }
-#         replication = 1
-#       }
-#       mode = "Application"
-#       job = {
-#         jarURI = "local:///opt/flink/usrlib/flink-job-1.0-SNAPSHOT.jar"
-#         entryClass = "org.example.MainKt"
-#         parallelism = 1
-#         upgradeMode = "stateless"
-#         allowNonRestoredState = true
-#       }
-#     }
-#   }
-#   depends_on = [
-#     helm_release.flink_operator,
-#     # The Docker image is now expected to be pre-built and pushed by Gradle
-#   ]
-# }
 
 # Output the Flink Kubernetes Operator status or endpoint if available
 output "flink_operator_namespace" {
@@ -90,16 +42,9 @@ resource "kubernetes_deployment" "flink_jobmanager" {
         container {
           image_pull_policy = var.image_pull_policy
           name  = "jobmanager"
-          # image = "flink:latest"
           image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
-          # args  = ["jobmanager"]
 
-          args = [
-            "standalone-job",
-            "--job-classname", "org.example.MainKt", # Your entry point class
-            # "--job-id", "optional-static-job-id",
-            # "--allowNonRestoredState"
-          ]
+          args = ["standalone-job", "--job-classname", "org.example.MainKt"]
 
           port {
             container_port = 6123
@@ -186,7 +131,6 @@ resource "kubernetes_deployment" "flink_taskmanager" {
       spec {
         container {
           name  = "taskmanager"
-          # image = "flink:latest"
           image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
           args  = ["taskmanager"]
 
