@@ -20,7 +20,7 @@ data class SongTotal(val songId: String, val activeCount: Int)
 fun main() {
     val config = loadConfig()
     val env = StreamExecutionEnvironment.getExecutionEnvironment()
-    env.parallelism = 1 // For easier observation of results
+//    env.parallelism = 1 // For easier observation of results
 
     // For simplicity, using a custom source that generates random song events
     // In a real scenario, this would be a NATS source

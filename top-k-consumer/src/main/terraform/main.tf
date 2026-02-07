@@ -91,7 +91,7 @@ resource "kubernetes_deployment" "flink_jobmanager" {
           image_pull_policy = var.image_pull_policy
           name  = "jobmanager"
           # image = "flink:latest"
-          image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT" # Change to your custom image containing the JAR
+          image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
           # args  = ["jobmanager"]
 
           args = [
@@ -186,7 +186,8 @@ resource "kubernetes_deployment" "flink_taskmanager" {
       spec {
         container {
           name  = "taskmanager"
-          image = "flink:latest"
+          # image = "flink:latest"
+          image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
           args  = ["taskmanager"]
 
           port {
@@ -232,18 +233,19 @@ resource "kubernetes_config_map" "flink_config" {
       taskmanager.rpc.port: 6122
       jobmanager.memory.process.size: 1600m
       taskmanager.memory.process.size: 1728m
-      parallelism.default: 2
+      parallelism.default: 4
     EOT
 
     "config.yaml" = <<-EOT
       jobmanager.rpc.address: flink-jobmanager
+      execution.target: kubernetes-session
       taskmanager.numberOfTaskSlots: 2
       blob.server.port: 6124
       jobmanager.rpc.port: 6123
       taskmanager.rpc.port: 6122
       jobmanager.memory.process.size: 1600m
       taskmanager.memory.process.size: 1728m
-      parallelism.default: 2
+      parallelism.default: 4
     EOT
 
     "app-config.yaml" = yamlencode(
