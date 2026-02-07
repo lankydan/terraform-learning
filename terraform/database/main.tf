@@ -21,6 +21,7 @@ resource "kubernetes_deployment" "postgres" {
       }
 
       spec {
+        # service_account_name = kubernetes_service_account.postgres_sa.metadata[0].name
         container {
           name  = "postgres"
           image = "postgres:15"

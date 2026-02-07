@@ -1,6 +1,9 @@
 [versions]
+flink = "1.17.1"
 hoplite = "2.9.0"
 jib = "3.4.5"
+shadow = "8.1.1"
+bmuschko-docker = "9.4.0"
 hikaricp = "6.3.0"
 kapper = "1.4.0"
 koin-bom = "4.0.4"
@@ -11,6 +14,9 @@ postgresql = "42.7.9"
 
 [libraries]
 hikaricp = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikaricp" }
+
+flink-streaming-java = { group = "org.apache.flink", name = "flink-streaming-java", version.ref = "flink" }
+flink-clients = { group = "org.apache.flink", name = "flink-clients", version.ref = "flink" }
 
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
@@ -32,3 +38,5 @@ postgres-driver = { module = "org.postgresql:postgresql", version.ref = "postgre
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
+bmuschko-docker = { id = "com.bmuschko.docker-remote-api", version.ref = "bmuschko-docker" }
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
