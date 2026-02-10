@@ -18,13 +18,12 @@ repositories {
 dependencies {
     implementation(libs.hoplite.core)
     implementation(libs.hoplite.yaml)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
+    implementation(libs.jackson.module.kotlin)
     implementation(libs.logback.classic)
     implementation(libs.flink.streaming.java)
     implementation(libs.flink.clients)
+    implementation(libs.flink.connector.nats)
+    implementation(libs.nats.java)
     testImplementation(kotlin("test"))
 }
 
@@ -32,8 +31,7 @@ tasks.test {
     useJUnitPlatform()
 }
 kotlin {
-//    jvmToolchain(21)
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
 
 application {
@@ -51,10 +49,6 @@ tasks.shadowJar {
     configurations = listOf(project.configurations.runtimeClasspath.get())
 }
 
-// Configure Docker tasks using the bmuschko plugin
-// Need to sort out the repository stuff eventually (not sharing a single repository)
-//val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
-//val imageName = "$dockerRepo/top-k-consumer:${project.version}"
 val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
 val imageName = "$dockerRepo:top-k-consumer-flink_${project.version}"
 
@@ -75,7 +69,6 @@ tasks.create<DockerPushImage>("dockerPushImage") {
     }
 }
 
-// Optional: create a lifecycle task to combine build and push
 tasks.register("buildAndPushFlinkImage") {
     dependsOn(tasks.named("dockerPushImage"))
     group = "docker"

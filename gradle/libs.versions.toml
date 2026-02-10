@@ -1,6 +1,8 @@
 [versions]
-flink = "1.17.1"
+flink = "2.2.0"
+flink-connector-nats = "3.0.2"
 hoplite = "2.9.0"
+jackson = "2.17.0"
 jib = "3.4.5"
 shadow = "8.1.1"
 bmuschko-docker = "9.4.0"
@@ -10,6 +12,7 @@ koin-bom = "4.0.4"
 kotlin = "2.1.10"
 ktor = "3.1.2"
 logback = "1.5.18"
+nats = "2.17.0"
 postgresql = "42.7.9"
 
 [libraries]
@@ -17,9 +20,13 @@ hikaricp = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikaricp" }
 
 flink-streaming-java = { group = "org.apache.flink", name = "flink-streaming-java", version.ref = "flink" }
 flink-clients = { group = "org.apache.flink", name = "flink-clients", version.ref = "flink" }
+# There is not an official nats flink connector
+flink-connector-nats = { group = "io.synadia", name = "flink-connector-nats", version.ref = "flink-connector-nats" }
 
 hoplite-core = { group = "com.sksamuel.hoplite", name = "hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { group = "com.sksamuel.hoplite", name = "hoplite-yaml", version.ref = "hoplite" }
+
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
 
 kapper = { group = "net.samyn", name = "kapper", version.ref = "kapper" }
 
@@ -32,6 +39,8 @@ ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "kto
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+nats-java = { module = "io.nats:jnats", version.ref = "nats" }
 
 postgres-driver = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 

@@ -1,4 +1,9 @@
 # Provider can only exist in the top level terraform, so it has been moved here from `../src/main/terraform`.
+
+locals {
+  nats_subject = "song.events"
+}
+
 provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "docker-desktop"
@@ -133,4 +138,28 @@ module "top-k-consumer" {
   namespace         = var.namespace
   image_pull_secret = kubernetes_secret.docker_registry.metadata[0].name
   image_pull_policy = var.image_pull_policy
+  nats_url          = module.nats.nats_url
+  nats_subject      = local.nats_subject
+}
+
+module "nats" {
+  source            = "./nats"
+  namespace         = var.namespace
+  image_tag         = "2.10"
+  image_pull_policy = var.image_pull_policy
+  replicas          = 1
+  stream_subjects   = local.nats_subject
+}
+
+module "top-k-publisher" {
+  source            = "../top-k-publisher/src/main/terraform"
+  namespace         = var.namespace
+  image_pull_secret = kubernetes_secret.docker_registry.metadata[0].name
+  image_pull_policy = var.image_pull_policy
+  replicas          = 1
+  nats_url          = module.nats.nats_url
+  nats_subject      = local.nats_subject
+  docker_repository = "lankydan/learning"
+  image_tag         = "1.0-SNAPSHOT"
+  depends_on        = [module.nats]
 }
