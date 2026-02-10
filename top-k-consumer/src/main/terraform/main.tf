@@ -40,7 +40,8 @@ resource "kubernetes_deployment" "flink_jobmanager" {
       }
       spec {
         container {
-          image_pull_policy = var.image_pull_policy
+          # image_pull_policy = var.image_pull_policy
+          image_pull_policy = "Always"
           name  = "jobmanager"
           image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
 
@@ -130,6 +131,8 @@ resource "kubernetes_deployment" "flink_taskmanager" {
       }
       spec {
         container {
+          # image_pull_policy = var.image_pull_policy
+          image_pull_policy = "Always"
           name  = "taskmanager"
           image = "lankydan/learning:top-k-consumer-flink_1.0-SNAPSHOT"
           args  = ["taskmanager"]
@@ -178,6 +181,8 @@ resource "kubernetes_config_map" "flink_config" {
       jobmanager.memory.process.size: 1600m
       taskmanager.memory.process.size: 1728m
       parallelism.default: 4
+      env.java.opts: --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+
     EOT
 
     "config.yaml" = <<-EOT
@@ -190,15 +195,10 @@ resource "kubernetes_config_map" "flink_config" {
       jobmanager.memory.process.size: 1600m
       taskmanager.memory.process.size: 1728m
       parallelism.default: 4
+      env.java.opts: --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
     EOT
 
-    "app-config.yaml" = yamlencode(
-      {
-        persistence = {
-          intervalSeconds = 3
-        }
-      }
-    )
+    "app-config.yaml" = local_file.config.content,
 
     "log4j-console.properties" = <<-EOT
       # This affects logging for both user code and Flink
@@ -239,10 +239,14 @@ resource "kubernetes_config_map" "flink_config" {
       logger.netty.name = org.jboss.netty.channel.DefaultChannelPipeline
       logger.netty.level = OFF
     EOT
-    # Need these in here as well?
-    # jobmanager.rpc.address: flink-jobmanager
-    # execution.target: kubernetes-session
-    # # If you are not using a custom image, you might need to specify the pipeline JAR
-    # # pipeline.jars: "local:///opt/flink/usrlib/my-job.jar"
-  }
-}
+      }
+    }
+    
+    resource "local_file" "config" {
+      content  = templatefile("${path.module}/config.tftpl", {
+        nats_url = var.nats_url,
+        nats_subject = var.nats_subject
+      })
+      filename = "${path.module}/app-config.yaml"
+    }
+    

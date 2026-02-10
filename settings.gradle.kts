@@ -6,5 +6,6 @@ rootProject.name = "terraform-learning"
 include(
     "app-service-1",
     "app-service-2",
-    "top-k-consumer"
+    "top-k-consumer",
+    "top-k-publisher"
 )

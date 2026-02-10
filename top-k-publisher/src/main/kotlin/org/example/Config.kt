@@ -4,19 +4,14 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
 import java.io.File
 
-data class Config(
-    val nats: NatsConfig,
-    val persistence: PersistenceConfig
-)
+data class Config(val nats: NatsConfig)
 
 data class NatsConfig(
     val url: String,
     val subject: String
 )
 
-data class PersistenceConfig(val intervalSeconds: Long)
-
-fun loadConfig(path: String = "/opt/flink/conf/app-config.yaml"): Config {
+fun loadConfig(path: String): Config {
     return ConfigLoaderBuilder.default()
         .addSource(PropertySource.file(File(path), optional = false))
         .build()
