@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.flink.connector.nats)
     implementation(libs.nats.java)
     implementation(libs.hikaricp)
+    implementation(libs.kapper)
     runtimeOnly(libs.postgres.driver)
     testImplementation(kotlin("test"))
 }

@@ -6,6 +6,7 @@ import io.nats.client.Message
 import io.synadia.flink.message.SourceConverter
 import io.synadia.flink.source.NatsSource
 import io.synadia.flink.source.NatsSourceBuilder
+import net.samyn.kapper.execute
 import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.common.functions.OpenContext
 import org.apache.flink.api.common.state.ValueState
@@ -146,7 +147,6 @@ class SongActivityPersistProcessFunction(
     private lateinit var applicationDataSource: ApplicationDataSource
 
     override fun open(context: OpenContext) {
-        Class.forName("org.example.shaded.postgresql.Driver")
         applicationDataSource = ApplicationDataSource(databaseConfig)
     }
 
@@ -157,19 +157,16 @@ class SongActivityPersistProcessFunction(
     ) {
         logger.info("Persisting song total {} => {}", value.songId, value.activeCount)
 
-        applicationDataSource.connection?.use {
-            val query = """
-                INSERT INTO song_active_count (song_id, active_count)
-                VALUES (?, ?)
-                ON CONFLICT (song_id) DO UPDATE SET
-                active_count = EXCLUDED.active_count;
-            """.trimIndent()
-            it.prepareStatement(query).use { preparedStatement ->
-                preparedStatement.setString(1, value.songId)
-                preparedStatement.setInt(2, value.activeCount)
-                preparedStatement.executeUpdate()
-            }
-        } ?: logger.error("Database connection is null, cannot persist song total.")
+        applicationDataSource.connection.use { connection ->
+            connection.execute(
+                sql = """
+                    INSERT INTO song_active_count (song_id, active_count) VALUES (:song_id, :active_count)
+                    ON CONFLICT (song_id) DO UPDATE SET active_count = EXCLUDED.active_count
+                    """.trimIndent(),
+                "song_id" to value.songId,
+                "active_count" to value.activeCount
+            )
+        }
     }
 
     private companion object {
