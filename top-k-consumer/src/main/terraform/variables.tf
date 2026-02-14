@@ -24,3 +24,27 @@ variable "nats_subject" {
   description = "The NATS subject to subscribe to"
   type = string
 }
+
+## database start
+
+variable "jdbcUrl" {
+  description = "jdbcUrl"
+  type        = string
+}
+
+variable "schema" {
+  description = "schema"
+  type        = string
+}
+
+variable "username" {
+  description = "username"
+  type        = string
+}
+
+variable "password" {
+  description = "password"
+  type        = string
+}
+
+## database end

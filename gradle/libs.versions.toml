@@ -4,7 +4,7 @@ flink-connector-nats = "3.0.2"
 hoplite = "2.9.0"
 jackson = "2.17.0"
 jib = "3.4.5"
-shadow = "8.1.1"
+shadow = "9.3.1"
 bmuschko-docker = "9.4.0"
 hikaricp = "6.3.0"
 kapper = "1.4.0"
@@ -48,4 +48,4 @@ postgres-driver = { module = "org.postgresql:postgresql", version.ref = "postgre
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 bmuschko-docker = { id = "com.bmuschko.docker-remote-api", version.ref = "bmuschko-docker" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

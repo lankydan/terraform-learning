@@ -15,6 +15,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.util.Collector
+import org.example.datasource.ApplicationDataSource
 import org.slf4j.LoggerFactory
 import java.io.ObjectInputStream
 import java.io.Serial
@@ -42,8 +43,8 @@ fun main() {
 
     songEvents
         .keyBy { it.songId }
-        .process(SongActivityProcessFunction(config.persistence.intervalSeconds))
-        .process(SongActivityPersistProcessFunction(config.persistence.intervalSeconds))
+        .process(SongActivityProcessFunction(config.intervalSeconds))
+        .process(SongActivityPersistProcessFunction(config.database))
 
     env.execute("Song Activity Flink Job")
 }
@@ -137,8 +138,17 @@ class SongActivityProcessFunction(private val intervalSeconds: Long) :
     }
 }
 
-class SongActivityPersistProcessFunction(private val intervalSeconds: Long) :
-    ProcessFunction<SongTotal, Unit>() {
+class SongActivityPersistProcessFunction(
+    private val databaseConfig: DatabaseConfig
+) : ProcessFunction<SongTotal, Unit>() {
+
+    @Transient
+    private lateinit var applicationDataSource: ApplicationDataSource
+
+    override fun open(context: OpenContext) {
+        Class.forName("org.example.shaded.postgresql.Driver")
+        applicationDataSource = ApplicationDataSource(databaseConfig)
+    }
 
     override fun processElement(
         value: SongTotal,
@@ -146,6 +156,20 @@ class SongActivityPersistProcessFunction(private val intervalSeconds: Long) :
         out: Collector<Unit>
     ) {
         logger.info("Persisting song total {} => {}", value.songId, value.activeCount)
+
+        applicationDataSource.connection?.use {
+            val query = """
+                INSERT INTO song_active_count (song_id, active_count)
+                VALUES (?, ?)
+                ON CONFLICT (song_id) DO UPDATE SET
+                active_count = EXCLUDED.active_count;
+            """.trimIndent()
+            it.prepareStatement(query).use { preparedStatement ->
+                preparedStatement.setString(1, value.songId)
+                preparedStatement.setInt(2, value.activeCount)
+                preparedStatement.executeUpdate()
+            }
+        } ?: logger.error("Database connection is null, cannot persist song total.")
     }
 
     private companion object {
@@ -155,3 +179,4 @@ class SongActivityPersistProcessFunction(private val intervalSeconds: Long) :
         val logger by lazy { LoggerFactory.getLogger(SongActivityPersistProcessFunction::class.java)!! }
     }
 }
+

@@ -1,5 +1,9 @@
+intervalSeconds: 2
 nats:
   url: ${nats_url}
   subject: ${nats_subject}
-persistence:
-  intervalSeconds: 2
+database:
+  jdbcUrl: ${jdbcUrl}
+  schema: ${schema}
+  username: ${username}
+  password: ${password}

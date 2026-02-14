@@ -46,6 +46,7 @@ resource "kubernetes_secret" "docker_registry" {
     })
   }
   type = "kubernetes.io/dockerconfigjson"
+  depends_on = [kubernetes_namespace.my-app-namespace]
 }
 
 resource "kubernetes_secret" "postgres" {
@@ -60,6 +61,7 @@ resource "kubernetes_secret" "postgres" {
     "user_username"  = "user"
     "user_password"  = random_password.postgres_passwords["user"].result
   }
+  depends_on = [kubernetes_namespace.my-app-namespace]
 }
 
 resource "random_password" "postgres_passwords" {
@@ -77,6 +79,7 @@ module "postgres" {
   namespace             = var.namespace
   schema                = "postgres"
   user_passwords_secret = kubernetes_secret.postgres.metadata[0].name
+  depends_on = [kubernetes_secret.postgres]
 }
 
 # Run apply from this terraform directory to run this module
@@ -93,6 +96,7 @@ module "app-service-1" {
   namespace                        = var.namespace
   image_pull_secret                = kubernetes_secret.docker_registry.metadata[0].name
   image_pull_policy = var.image_pull_policy
+  depends_on = [kubernetes_namespace.my-app-namespace]
 }
 
 module "app-service-2" {
@@ -112,7 +116,7 @@ module "app-service-2" {
   schema     = "postgres"
   username   = "postgres"
   password   = "postgres"
-  depends_on = [module.postgres]
+  depends_on = [kubernetes_namespace.my-app-namespace, module.postgres]
 }
 
 module "ingress" {
@@ -140,6 +144,12 @@ module "top-k-consumer" {
   image_pull_policy = var.image_pull_policy
   nats_url          = module.nats.nats_url
   nats_subject      = local.nats_subject
+  jdbcUrl                          = module.postgres.jdbcUrl
+  # hard coded
+  schema     = "postgres"
+  username   = "postgres"
+  password   = "postgres"
+  depends_on = [module.postgres]
 }
 
 module "nats" {
@@ -149,6 +159,7 @@ module "nats" {
   image_pull_policy = var.image_pull_policy
   replicas          = 1
   stream_subjects   = local.nats_subject
+  depends_on = [kubernetes_namespace.my-app-namespace]
 }
 
 module "top-k-publisher" {
