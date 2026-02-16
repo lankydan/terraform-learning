@@ -3,10 +3,12 @@ package org.example
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
 import java.io.File
+import java.io.Serializable
 
 data class Config(
+    val intervalSeconds: Long,
     val nats: NatsConfig,
-    val persistence: PersistenceConfig
+    val database: DatabaseConfig
 )
 
 data class NatsConfig(
@@ -14,7 +16,8 @@ data class NatsConfig(
     val subject: String
 )
 
-data class PersistenceConfig(val intervalSeconds: Long)
+data class DatabaseConfig(val jdbcUrl: String, val schema: String, val username: String, val password: String) :
+    Serializable
 
 fun loadConfig(path: String = "/opt/flink/conf/app-config.yaml"): Config {
     return ConfigLoaderBuilder.default()

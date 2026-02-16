@@ -245,8 +245,76 @@ resource "kubernetes_config_map" "flink_config" {
     resource "local_file" "config" {
       content  = templatefile("${path.module}/config.tftpl", {
         nats_url = var.nats_url,
-        nats_subject = var.nats_subject
+        nats_subject = var.nats_subject,
+        jdbcUrl = var.jdbcUrl,
+        schema = var.schema,
+        username = var.username,
+        password = var.password
       })
       filename = "${path.module}/app-config.yaml"
     }
+
+resource "kubernetes_config_map" "liquibase_scripts" {
+  metadata {
+    name = "top-k-consumer-liquibase-scripts"
+    namespace = var.namespace
+  }
+
+  data = {
+    "changelog.xml"               = file("${path.module}/liquibase/changelog-master.xml")
+    "song-active-count-table.xml" = file("${path.module}/liquibase/song-active-count-table.xml")
+  }
+}
+
+resource "kubernetes_job" "liquibase_migration" {
+  metadata {
+    name = "top-k-consumer-liquibase-migration-${substr(md5(jsonencode(kubernetes_config_map.liquibase_scripts.data)), 0, 8)}"
+    namespace = var.namespace
+  }
+  spec {
+    ttl_seconds_after_finished = 300
+    template {
+      metadata {
+        labels = {
+          App = "top-k-consumer-liquibase-migration"
+        }
+      }
+      spec {
+        container {
+          name  = "liquibase"
+          image = "liquibase/liquibase:4.20"
+
+          command = ["liquibase"]
+          args = [
+            "--search-path=/liquibase/changelog",
+            "--changelog-file=changelog.xml",
+            "--url=${var.jdbcUrl}",
+            "--username=${var.username}",
+            "--password=${var.password}",
+            "--default-schema-name=${var.schema}",
+            "update"
+          ]
+
+          volume_mount {
+            name       = "scripts"
+            mount_path = "/liquibase/changelog"
+            read_only  = true
+          }
+        }
+
+        volume {
+          name = "scripts"
+          config_map {
+            name = kubernetes_config_map.liquibase_scripts.metadata[0].name
+          }
+        }
+        restart_policy = "Never"
+      }
+    }
+  }
+  depends_on = [
+    kubernetes_config_map.liquibase_scripts
+  ]
+}
+
     

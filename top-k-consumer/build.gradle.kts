@@ -24,6 +24,9 @@ dependencies {
     implementation(libs.flink.clients)
     implementation(libs.flink.connector.nats)
     implementation(libs.nats.java)
+    implementation(libs.hikaricp)
+    implementation(libs.kapper)
+    runtimeOnly(libs.postgres.driver)
     testImplementation(kotlin("test"))
 }
 
@@ -47,6 +50,8 @@ tasks.shadowJar {
         attributes["Main-Class"] = "org.example.MainKt"
     }
     configurations = listOf(project.configurations.runtimeClasspath.get())
+    // Relocates the driver so that the flink job/task managers can find the driver.
+    relocate("org.postgresql", "org.example.shaded.postgresql")
 }
 
 val dockerRepo = project.findProperty("dockerRepository") as String? ?: "lankydan/learning"
