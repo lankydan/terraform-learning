@@ -15,4 +15,15 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="create-song-active-count-table-2" author="top-k-consumer">
+        <createTable tableName="song_active_count_2">
+            <column name="song_id" type="VARCHAR(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="active_count" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

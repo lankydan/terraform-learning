@@ -4,7 +4,7 @@ import io.nats.client.Nats
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-data class SongEvent(val songId: String, val eventType: EventType)
+data class SongEvent(val songId: String, val eventType: EventType, val timestamp: Long)
 enum class EventType { START, STOP }
 
 fun main(args: Array<String>) {
@@ -17,8 +17,8 @@ fun main(args: Array<String>) {
     while (true) {
         val songId = songIds[random.nextInt(songIds.size)]
         val eventType = if (random.nextBoolean()) EventType.START else EventType.STOP
-        val event = SongEvent(songId, eventType)
-        val eventJson = """{"songId":"${event.songId}","eventType":"${event.eventType}"}"""
+        val event = SongEvent(songId, eventType, System.currentTimeMillis())
+        val eventJson = """{"songId":"${event.songId}","eventType":"${event.eventType}","timestamp":${event.timestamp}}"""
         nc.publish(config.nats.subject, eventJson.toByteArray())
         println("Published: $eventJson")
         TimeUnit.MILLISECONDS.sleep(random.nextLong(100, 500))

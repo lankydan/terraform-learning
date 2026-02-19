@@ -7,6 +7,13 @@ import java.sql.ConnectionBuilder
 import java.sql.ShardingKeyBuilder
 import javax.sql.DataSource
 
+@Synchronized
+fun getApplicationDataSource(config: DatabaseConfig): ApplicationDataSource {
+    return applicationDataSource ?: ApplicationDataSource(config).also { applicationDataSource = it }
+}
+
+private var applicationDataSource: ApplicationDataSource? = null
+
 class ApplicationDataSource(config: DatabaseConfig) : DataSource by HikariDataSource(
     HikariConfig().apply {
         // The driver has been shaded to ensure that the job/task managers can properly load and find the driver.
